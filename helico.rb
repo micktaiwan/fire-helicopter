@@ -25,19 +25,20 @@ class Helico
   def update
     time = Time.now-@time
     if @up
-      @acc.y = -0.2
+      @acc.y = -0.05
     else
-      @acc.y = 0.2
+      @acc.y = 0.05
     end
     @acc.x = 0
     if @right
-      @acc.x = 0.1
+      @acc.x = 0.05
     end
     if @left
-      @acc.x = -0.1
+      @acc.x = -0.05
     end
     @speed += @acc*time
-    @speed.y = 500 if @speed.y > 500
+    @speed.y = 0.05 if @speed.y > 0.05
+    @speed.x *= 0.9999
     @pos += @speed
     check_pos
     @ellipse.x1 = @pos.x-Sizeby2
