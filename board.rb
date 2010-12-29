@@ -113,10 +113,10 @@ class Board < Gtk::VBox
     @map.ground.each { |line|
       p = get_intersection(line[0],line[1], line[2],line[3], @helico.pos.x,@helico.pos.y, @helico.pos.x+s.x,@helico.pos.y+s.y)
       if p and distance(@helico.pos.x, @helico.pos.y, p.x, p.y) <= Helico::Sizeby2
+        @@player.play(:dead) if @helico.speed.length > 0.02
         @helico.speed.y = 0
         @helico.speed.x *= 0.5
         @helico.pos.y -= 0.5
-
       end
       }
   end

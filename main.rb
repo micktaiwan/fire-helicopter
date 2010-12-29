@@ -1,11 +1,11 @@
 #!/usr/bin/env ruby
 
 require 'board'
-#require 'utils'
-#require 'player'
+require 'utils'
+require 'player'
 #require 'game'
 
-#@@player = Player.new(SOUNDS)
+@@player = Player.new(SOUNDS)
 
 Gtk.init()
 #game  = Game.new
@@ -17,6 +17,6 @@ loop {
   break if board.destroyed?
   }
 
-#@@player.quit
+@@player.quit
 #Gtk.main_quit
 
