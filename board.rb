@@ -25,7 +25,6 @@ class Board < Gtk::VBox
   attr_reader :virus, :level, :current_level
   #attr_accessor
 
-
   def initialize(is_admin)
     super()
     @circles        = []
@@ -93,6 +92,7 @@ class Board < Gtk::VBox
   end
 
   def start
+    @@player.play(:flying,-1,-1) # infinite loop
   	@started = true
   end
 

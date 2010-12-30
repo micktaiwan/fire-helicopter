@@ -1,6 +1,7 @@
 require 'vector'
 
-SOUNDS = { :dead => 'dead.wav'}
+SOUNDS = {:dead => 'dead.wav',
+          :flying => 'flying.wav'}
 
 def distance(a,b,x,y)
     Math.sqrt( (((x-a)*(x-a)) + ((y-b)*(y-b))).abs )

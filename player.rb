@@ -25,10 +25,10 @@ class Player
       }
   end
 
-  def play(id)
+  def play(id, channel=-1, loop=0)
     raise "Sound '#{id}' does not exists" if @sounds[id] == nil
     begin
-      SDL::Mixer.play_channel(-1,@sounds[id],0)
+      SDL::Mixer.play_channel(channel,@sounds[id],loop)
     rescue # in case of too many sounds played and no more free channel
     end
   end
