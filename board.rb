@@ -35,6 +35,7 @@ class Board < Gtk::VBox
     @canvas = Gnome::Canvas.new(true)
     @box.add(@canvas)
     @box.set_visible_window(@canvas)
+    @map = Map.new(@canvas)
     @helico = Helico.new(@canvas,300,550)
     @box.signal_connect('size-allocate') { |w,e,*b|
       @width, @height = [e.width,e.height].collect{|i|i - (@pad*2)}
@@ -85,7 +86,6 @@ class Board < Gtk::VBox
       end
       false
     end
-    @map = Map.new(@canvas)
     signal_connect_after('show') {|w,e| start() }
     signal_connect_after('hide') {|w,e| stop() }
     show_all()
@@ -126,7 +126,7 @@ class Board < Gtk::VBox
     @map.each_line { |line|
       p = get_intersection(line[0],line[1], line[2],line[3], @helico.pos.x,@helico.pos.y, @helico.pos.x+s.x,@helico.pos.y+s.y)
       if p and distance(@helico.pos.x, @helico.pos.y, p.x, p.y) <= Helico::Sizeby2
-        @@player.play(:dead) if @helico.speed.length > 0.03
+        @@player.play(:dead) if @helico.speed.length > 0.04
         @helico.speed.y = 0
         @helico.speed.x *= 0.5
         @helico.pos.y -= 0.5

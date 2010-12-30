@@ -1,4 +1,5 @@
 require 'vector'
+require 'meter'
 
 class Helico
 
@@ -18,7 +19,10 @@ class Helico
     @up         = false
     @right      = false
     @left       = false
-    @time = Time.now
+    @time       = Time.now
+    @speed_meter= Meter.new(@canvas, "Speed", MVector.new(100, 580), 50, 0, 0.5, 0)
+    @vspeed_meter= Meter.new(@canvas, "V speed", MVector.new(220, 580), 50, 0, 0.5, Math::PI/2)
+    @alt_meter  = Meter.new(@canvas, "Alt", MVector.new(340, 580), 50, 0, 1000, 0)
     update
   end
 
@@ -45,6 +49,9 @@ class Helico
     @ellipse.y1 = @pos.y-Sizeby2
     @ellipse.x2 = @pos.x+Sizeby2
     @ellipse.y2 = @pos.y+Sizeby2
+    @speed_meter.update(@speed.length)
+    @vspeed_meter.update(-@speed.y)
+    @alt_meter.update(-(@pos.y-550))
     @time = Time.now
   end
 
