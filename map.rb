@@ -4,9 +4,9 @@ class Map
 
   def initialize(canvas)
     @canvas         = canvas
-    @ground         = [[-2500, -1000, -2500, 550], [-2500, 550, -1500, 550],
-                      [-1500, 550, -500, 150], [-500, 150, 0, 550],
-                      [0, 550, 350, 550], [350, 550, 500, 300],
+    @ground         = [[-2500, -1000, -2500, 450], [-2500, 450, -1500, 450],
+                      [-1500, 450, -500, 150], [-500, 150, 0, 450],
+                      [0, 450, 350, 450], [350, 450, 500, 300],
                       [500, 300, 800, 300], [800, 300, 1200, 400],
                       [1200, 400, 2200, 400], [2200, 400, 2200, -1000]]
     @lines          = []
@@ -49,6 +49,7 @@ class Map
   def update
     #return if @current_offset == @offset
     @current_offset += @offset_speed
+    # TODO: add ground lines to a new canvas group, and move it only once
     @ground.each_with_index { |p,i|
       @lines[i].points = [[p[0]+@current_offset, p[1]], [p[2]+@current_offset, p[3]]]
       }

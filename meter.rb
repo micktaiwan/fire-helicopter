@@ -1,6 +1,6 @@
 class Meter
 
-  def initialize(canvas, text, pos, size, min,max, start_angle)
+  def initialize(canvas, text, pos, size, min,max, start_angle=0)
     @canvas     = canvas
     @pos, @size = pos, size
     @min, @max  = min, max
@@ -14,19 +14,26 @@ class Meter
         :points => [[@pos.x, @pos.y], [@pos.x, @pos.y-@size]],
         :fill_color => "red",
         :width_pixels => 2.0)
-    @level = Gnome::CanvasText.new(@canvas.root, {
+    @text = Gnome::CanvasText.new(@canvas.root, {
       :x => @pos.x,
       :y => @pos.y+10,
       :fill_color=>"white",
       :family=>"Arial",
       :markup => text})
+    @max_text = Gnome::CanvasText.new(@canvas.root, {
+      :x => @pos.x+@size,
+      :y => @pos.y,
+      :fill_color=>"white",
+      :family=>"Arial",
+      :markup => @max.to_s})
   end
 
   def update(value)
-    angle = -(Math::PI - value/@max * Math::PI)
+    angle = value*Math::PI/@max - Math::PI
     x = @pos.x + Math.cos(angle+@start_angle)*@size*0.9
     y = @pos.y + Math.sin(angle+@start_angle)*@size*0.9
     @needle.points = [[@pos.x, @pos.y], [x, y]]
+    [x,y]
   end
 
 private

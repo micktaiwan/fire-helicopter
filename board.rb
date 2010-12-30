@@ -32,33 +32,49 @@ class Board < Gtk::VBox
     pack_start(@box)
     set_border_width(@pad = 0)
     set_size_request((@width = 48)+(@pad*2), (@height = 48)+(@pad*2))
-    @canvas = Gnome::Canvas.new(true)
+    @canvas = Gnome::Canvas.new(true) # SWT.DOUBLE_BUFFERED | SWT.NO_BACKGROUND
+    #@canvas.signal_connect("draw-background") {
+    #  puts "draw"
+    #  false
+    #  }
+    #@canvas.signal_connect("render-background") {
+    #  puts "render"
+    #  false
+    #  }
+    @canvas.double_buffered = false
+    #@canvas.set_scroll_region(-1000,-1000, 1200,1200)
+    #@canvas.set_pixels_per_unit(0.5)
+    #@canvas.scroll_to(200,200)
     @box.add(@canvas)
     @box.set_visible_window(@canvas)
     @map = Map.new(@canvas)
-    @helico = Helico.new(@canvas,300,550)
+    @helico = Helico.new(@canvas,300,449)
     @box.signal_connect('size-allocate') { |w,e,*b|
       @width, @height = [e.width,e.height].collect{|i|i - (@pad*2)}
       @canvas.set_size(@width,@height)
       @canvas.set_scroll_region(0,0,@width,@height)
-      @bg.destroy if @bg
-      @bg = Gnome::CanvasRect.new(@canvas.root, {
-        :x1 => 0,
-        :y1 => 0,
-        :x2 => @width,
-        :y2 => @height,
-        :fill_color_rgba => 0x667788FF})
-      @bg.lower_to_bottom
+      if not @bg
+        @bg = Gnome::CanvasRect.new(@canvas.root, {
+          :x1 => 0,
+          :y1 => 0,
+          :x2 => @width,
+          :y2 => @height,
+          :fill_color_rgba => 0x667788FF})
+        @bg.lower_to_bottom
+      else
+        @bg.x2 = @width
+        @bg.y2 = @height
+      end
       false
       }
-    @box.signal_connect('button-press-event') do |owner, ev|
+    @box.signal_connect('button-press-event') do |item, ev|
       @mouse_down = true
       false
     end
     @box.signal_connect('motion_notify_event') do |item,  ev|
       false
     end
-    @box.signal_connect('button-release-event') do |owner, ev|
+    @box.signal_connect('button-release-event') do |item, ev|
       @mouse_down = nil
       false
     end
@@ -103,14 +119,14 @@ class Board < Gtk::VBox
   def iterate
     @helico.update
     @map.update
-    check_offset
+    check_map_offset
     check_collisions
     while (Gtk.events_pending?)
       Gtk.main_iteration
     end
   end
 
-  def check_offset
+  def check_map_offset
     if @helico.pos.x > 350 and @helico.speed.x > 0
       @map.add_offset(-@helico.speed.x)
       @helico.pos.x -= @helico.speed.x*((@helico.pos.x-350)/100)
@@ -125,11 +141,17 @@ class Board < Gtk::VBox
     s = @helico.speed*10
     @map.each_line { |line|
       p = get_intersection(line[0],line[1], line[2],line[3], @helico.pos.x,@helico.pos.y, @helico.pos.x+s.x,@helico.pos.y+s.y)
-      if p and distance(@helico.pos.x, @helico.pos.y, p.x, p.y) <= Helico::Sizeby2
-        @@player.play(:dead) if @helico.speed.length > 0.04
-        @helico.speed.y = 0
-        @helico.speed.x *= 0.5
-        @helico.pos.y -= 0.5
+      if p and distance(@helico.pos.x, @helico.pos.y, p.x, p.y) <= 1
+        if @helico.speed.length > 0.11
+          @@player.play(:dead)
+          puts "crash at speed #{@helico.speed.length}"
+          @helico.speed.y   = -@helico.speed.y*0.8
+          @helico.speed.x   *= 0.5
+        else
+          @helico.speed.y   = 0
+          @helico.speed.x   *= 0.5
+        end
+        @helico.pos.y     = p.y-0.1
       end
       }
   end
