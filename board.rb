@@ -10,7 +10,7 @@ require 'utils'
 class Viewer < Gtk::Window
   def initialize(board)
     super()
-    set_title("Drawing")
+    set_title("Fire Helcopter")
     signal_connect("delete_event") { |i,a| board.destroy } #; Gtk.main_quit }
     set_default_size(600,600)
     add_accel_group(@@accel_group)
@@ -36,7 +36,7 @@ class Board < Gtk::VBox
     @canvas = Gnome::Canvas.new(true)
     @box.add(@canvas)
     @box.set_visible_window(@canvas)
-    @helico = Helico.new(@canvas,300,300)
+    @helico = Helico.new(@canvas,300,550)
     @box.signal_connect('size-allocate') { |w,e,*b|
       @width, @height = [e.width,e.height].collect{|i|i - (@pad*2)}
       @canvas.set_size(@width,@height)
@@ -102,18 +102,31 @@ class Board < Gtk::VBox
 
   def iterate
     @helico.update
+    @map.update
+    check_offset
     check_collisions
     while (Gtk.events_pending?)
       Gtk.main_iteration
     end
   end
 
+  def check_offset
+    if @helico.pos.x > 350 and @helico.speed.x > 0
+      @map.add_offset(-@helico.speed.x)
+      @helico.pos.x -= @helico.speed.x*((@helico.pos.x-350)/100)
+    end
+    if @helico.pos.x < 250 and @helico.speed.x < 0
+      @map.add_offset(-@helico.speed.x)
+      @helico.pos.x -= @helico.speed.x*((250-@helico.pos.x)/100)
+    end
+  end
+
   def check_collisions
     s = @helico.speed*10
-    @map.ground.each { |line|
+    @map.each_line { |line|
       p = get_intersection(line[0],line[1], line[2],line[3], @helico.pos.x,@helico.pos.y, @helico.pos.x+s.x,@helico.pos.y+s.y)
       if p and distance(@helico.pos.x, @helico.pos.y, p.x, p.y) <= Helico::Sizeby2
-        @@player.play(:dead) if @helico.speed.length > 0.02
+        @@player.play(:dead) if @helico.speed.length > 0.03
         @helico.speed.y = 0
         @helico.speed.x *= 0.5
         @helico.pos.y -= 0.5

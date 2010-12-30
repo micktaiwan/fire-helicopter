@@ -3,9 +3,12 @@ class Map
   attr_reader :ground
 
   def initialize(canvas)
-    @canvas = canvas
-    @ground = [[0, 550, 250, 550], [250, 550, 500, 300], [500, 300, 600, 300]]
-    @lines = []
+    @canvas         = canvas
+    @ground         = [[-1500, 550, -500, 150], [-500, 150, 0, 550], [0, 550, 350, 550], [350, 550, 500, 300], [500, 300, 800, 300], [800, 300, 1200, 400]]
+    @lines          = []
+    @offset         = 0.0
+    @offset_speed   = 0.0
+    @current_offset = 0.0
     init
   end
 
@@ -22,6 +25,29 @@ class Map
   def clear
     @lines.each { |l| l.destroy }
     @lines = []
+  end
+
+  def each_line
+    @ground.each { |l|
+      yield [l[0]+@current_offset, l[1], l[2]+@current_offset, l[3]]
+      }
+  end
+
+  def add_offset(o)
+    set_offset(@offset+o)
+  end
+
+  def set_offset(o)
+    @offset = o.to_f
+    @offset_speed = (@offset - @current_offset)# / 100
+  end
+
+  def update
+    #return if @current_offset == @offset
+    @current_offset += @offset_speed
+    @ground.each_with_index { |p,i|
+      @lines[i].points = [[p[0]+@current_offset, p[1]], [p[2]+@current_offset, p[3]]]
+      }
   end
 
 end

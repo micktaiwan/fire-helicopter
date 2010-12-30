@@ -5,6 +5,9 @@ require 'utils'
 require 'player'
 #require 'game'
 
+# TODO: moving map
+# TODO: dashboard with various meters (fuel, water level, speed)
+
 @@player = Player.new(SOUNDS)
 
 Gtk.init()
@@ -19,4 +22,9 @@ loop {
 
 @@player.quit
 #Gtk.main_quit
+
+
+# (o-
+# //\
+# v_/_
 
