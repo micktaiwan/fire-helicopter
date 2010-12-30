@@ -20,38 +20,42 @@ class Helico
     @right      = false
     @left       = false
     @time       = Time.now
-    @speed_meter= Meter.new(@canvas, "Speed", MVector.new(100, 580), 50, 0, 0.5, 0)
-    @vspeed_meter= Meter.new(@canvas, "V speed", MVector.new(220, 580), 50, 0, 0.5, Math::PI/2)
-    @alt_meter  = Meter.new(@canvas, "Alt", MVector.new(340, 580), 50, 0, 1000, 0)
+    @max_speed  = 0.3
+    @max_descending_speed  =  0.07
+    @max_ascending_speed   = -0.15
+    @speed_meter  = Meter.new(@canvas, "Speed",   MVector.new(100, 580), 50, 0, @max_speed, 0)
+    @vspeed_meter = Meter.new(@canvas, "V speed", MVector.new(220, 580), 50, 0, @max_speed, Math::PI/2)
+    @alt_meter    = Meter.new(@canvas, "Alt",     MVector.new(340, 580), 50, 0, 1000, 0)
     update
   end
 
   def update
     time = Time.now-@time
-    if @up
-      @acc.y = -0.05
-    else
-      @acc.y = 0.05
+    if @up; @acc.y = -0.05
+    else;   @acc.y =  0.05
     end
     @acc.x = 0
-    if @right
-      @acc.x = 0.05
+    @acc.x =  0.05 if @right
+    @acc.x = -0.05 if @left
+    @speed   += @acc*time
+    if @speed.y > @max_descending_speed;   @speed.y  = @max_descending_speed
+    elsif @speed.y < @max_ascending_speed; @speed.y  = @max_ascending_speed
     end
-    if @left
-      @acc.x = -0.05
-    end
-    @speed += @acc*time
-    @speed.y = 0.05 if @speed.y > 0.05
     @speed.x *= 0.9999
-    @pos += @speed
+    @speed = @speed.normalize*@max_speed if @speed.length > @max_speed
+    @pos     += @speed
+
     check_pos
+
     @ellipse.x1 = @pos.x-Sizeby2
     @ellipse.y1 = @pos.y-Sizeby2
     @ellipse.x2 = @pos.x+Sizeby2
     @ellipse.y2 = @pos.y+Sizeby2
+
     @speed_meter.update(@speed.length)
     @vspeed_meter.update(-@speed.y)
     @alt_meter.update(-(@pos.y-550))
+
     @time = Time.now
   end
 
