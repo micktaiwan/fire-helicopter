@@ -48,7 +48,7 @@ class Board < Gtk::VBox
     @box.add(@canvas)
     @box.set_visible_window(@canvas)
     @map = Map.new(@canvas)
-    @helico = Helico.new(@canvas,300,449)
+    @helico = Helico.new(@canvas,170,439)
     @box.signal_connect('size-allocate') { |w,e,*b|
       @width, @height = [e.width,e.height].collect{|i|i - (@pad*2)}
       @canvas.set_size(@width,@height)
@@ -83,22 +83,26 @@ class Board < Gtk::VBox
       when Gdk::Keyval::GDK_Escape
         @helico.pos.x, @helico.pos.y = 300, 300
       when Gdk::Keyval::GDK_Up
-        @helico.up = true
+        @helico.vert = :up
+      when Gdk::Keyval::GDK_Down
+        @helico.vert = :down
       when Gdk::Keyval::GDK_Right
-        @helico.right = true
+        @helico.horiz = :right
       when Gdk::Keyval::GDK_Left
-        @helico.left = true
+        @helico.horiz = :left
       end
       false
     end
     @box.signal_connect('key-release-event') do |owner, ev|
       case ev.keyval
+      when Gdk::Keyval::GDK_Down
+        @helico.vert = nil
       when Gdk::Keyval::GDK_Up
-        @helico.up = false
+        @helico.vert = nil
       when Gdk::Keyval::GDK_Right
-        @helico.right = false
+        @helico.horiz = nil
       when Gdk::Keyval::GDK_Left
-        @helico.left = false
+        @helico.horiz = nil
       end
       false
     end
@@ -128,12 +132,14 @@ class Board < Gtk::VBox
 
   def check_map_offset
     if @helico.pos.x > 350 and @helico.speed.x > 0
-      @map.add_offset(-@helico.speed.x)
-      @helico.pos.x -= @helico.speed.x*((@helico.pos.x-350)/100)
+      off = @helico.speed.x*((350.0-@helico.pos.x)/100)
+      @map.add_offset(off)
+      @helico.pos.x += off
     end
     if @helico.pos.x < 250 and @helico.speed.x < 0
-      @map.add_offset(-@helico.speed.x)
-      @helico.pos.x -= @helico.speed.x*((250-@helico.pos.x)/100)
+      off = @helico.speed.x*((@helico.pos.x-250.0)/100)
+      @map.add_offset(off)
+      @helico.pos.x += off
     end
   end
 
@@ -142,9 +148,13 @@ class Board < Gtk::VBox
     @map.each_line { |line|
       p = get_intersection(line[0],line[1], line[2],line[3], @helico.pos.x,@helico.pos.y, @helico.pos.x+s.x,@helico.pos.y+s.y)
       if p and distance(@helico.pos.x, @helico.pos.y, p.x, p.y) <= 1
-        if @helico.speed.length > 0.11
+        if @helico.speed.length > 0.15
           @@player.play(:dead)
           puts "crash at speed #{@helico.speed.length}"
+          @helico.speed.y   = -@helico.speed.y*0.8
+          @helico.speed.x   *= 0.5
+        elsif @helico.speed.length > 0.08
+          @@player.play(:landing)
           @helico.speed.y   = -@helico.speed.y*0.8
           @helico.speed.x   *= 0.5
         else

@@ -29,7 +29,7 @@ class Meter
   end
 
   def update(value)
-    angle = value*Math::PI/@max - Math::PI
+    angle = (value-@min)*Math::PI/@max - Math::PI
     x = @pos.x + Math.cos(angle+@start_angle)*@size*0.9
     y = @pos.y + Math.sin(angle+@start_angle)*@size*0.9
     @needle.points = [[@pos.x, @pos.y], [x, y]]

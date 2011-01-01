@@ -4,7 +4,7 @@ require 'meter'
 class Helico
 
   attr_reader :state
-  attr_accessor :acc, :up, :right, :left, :speed, :pos
+  attr_accessor :acc, :vert, :horiz, :speed, :pos
 
   def initialize(canvas, x, y)
     @canvas = canvas
@@ -13,9 +13,8 @@ class Helico
     @pos        = MVector.new(x,y,0)
     @old_pos    = @pos
 
-    pixbuf1    = Gdk::Pixbuf.new("images/helico-right.png")
-    pixbuf2   = Gdk::Pixbuf.new("images/helico-left.png")
-    #pixbuf.rotate(90)
+    pixbuf1 = Gdk::Pixbuf.new("images/helico-right.png")
+    pixbuf2 = Gdk::Pixbuf.new("images/helico-left.png")
     @image_right  = Gtk::Image.new(pixbuf1)
     @image_left   = Gtk::Image.new(pixbuf2)
     #@image.modify_bg(Gtk::STATE_NORMAL, Gdk::Color.new(65000,0,0))
@@ -27,28 +26,31 @@ class Helico
     @speed      = MVector.new
     @acc        = MVector.new(0, 0, 0)
     #@state      = :playing
-    @up         = false
-    @right      = false
-    @left       = false
+    @vert       = nil
+    @horiz      = nil
     @time       = Time.now
     @input      = 0.1
-    @max_speed  = 0.3
-    @max_descending_speed  =  0.1
-    @max_ascending_speed   = -0.2
+    @max_speed  = 0.4
+    @max_descending_speed  =  0.2
+    @max_ascending_speed   = -0.4
     @speed_meter  = Meter.new(@canvas, "Speed",   MVector.new(100, 580), 50, 0, @max_speed, 0)
     @vspeed_meter = Meter.new(@canvas, "V speed", MVector.new(220, 580), 50, 0, -@max_ascending_speed*2, Math::PI/2)
-    @alt_meter    = Meter.new(@canvas, "Alt",     MVector.new(340, 580), 50, 0, 1000, 0)
+    @alt_meter    = Meter.new(@canvas, "Alt",     MVector.new(340, 580), 50, 0, 450, 0)
     update
   end
 
   def update
     time = Time.now-@time
-    if @up; @acc.y = -@input
-    else;   @acc.y =  @input
+    if @vert == :up;      @acc.y = -@input
+    elsif @vert == :down; @acc.y =  @input*2
+    else @acc.y =  @input
     end
     @acc.x = 0
-    @acc.x =  @input if @right
-    @acc.x = -@input if @left
+    if @horiz == :right
+      @acc.x =  @input
+    elsif  @horiz == :left
+      @acc.x = -@input
+    end
     @speed   += @acc*time
     if @speed.y > @max_descending_speed;   @speed.y  = @max_descending_speed
     elsif @speed.y < @max_ascending_speed; @speed.y  = @max_ascending_speed
@@ -68,7 +70,7 @@ class Helico
 
     @speed_meter.update(@speed.length)
     @vspeed_meter.update(-@speed.y)
-    @alt_meter.update(-(@pos.y-550))
+    @alt_meter.update(-(@pos.y-450))
 
     @old_pos = @pos
     @time = Time.now
@@ -85,7 +87,7 @@ class Helico
   end
 
   def moved?
-    return true if @pos != @old_pos
+    return true if @speed.length > 0.006 #or @pos != @old_pos
     false
   end
 
